@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using FrontExample.Data;
 using MatBlazor;
+string url = "https://localhost:7294";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddMatBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddSingleton<HttpService>(p =>
+{
+    HttpService service = new HttpService(url);
+    return service;
+});
 
 var app = builder.Build();
 

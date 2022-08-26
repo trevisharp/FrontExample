@@ -1,9 +1,139 @@
 ﻿@page "/"
+@inject HttpService http
 
-<PageTitle>Index</PageTitle>
+<div class="main-container">
+    <div class="login-area">
+        <p>
+            <MatTextField 
+                @bind-Value="@Email" 
+                Label="Email" 
+                Icon="email"></MatTextField>
+        </p>
 
-<h1>Hello, world!</h1>
+        <label style="color: red;">
+            @PasswordError
+        </label>
+        <p>
+            <MatTextField 
+                @bind-Value="@Password" 
+                Label="Senha" 
+                Icon="lock"></MatTextField>
+        </p>
 
-Welcome to your new app.
+        @if (InRegister)
+        {
+            <label style="color: red;">
+                @RepeatPassError
+            </label>
+            <p>
+                <MatTextField 
+                    @bind-Value="@RepeatPassword"
+                    Label="Repita sua Senha" 
+                    Icon="lock"></MatTextField>
+            </p>
+            <label style="color: red;">@CpfError</label>
+            <p>
+                <MatTextField 
+                    @bind-Value="@CPF" 
+                    Icon="security"
+                    OnKeyUp="@OnCpfChagend"
+                    Label="CPF">
+                    </MatTextField>
+            </p>
+            <p>
+                <MatTextField 
+                    @bind-Value="@CEP"
+                    Icon="home" 
+                    Label="CEP">
+                    </MatTextField>
+            </p>
+            <p>
+                <MatTextField 
+                    @bind-Value="@Street" 
+                    Disabled="true"
+                    Label="Rua">
+                    </MatTextField>
+            </p>
+            <p>
+                <MatTextField 
+                    @bind-Value="@District" 
+                    Disabled="true"
+                    Label="Bairro">
+                    </MatTextField>
+            </p>
+            <p>
+                <MatTextField 
+                    @bind-Value="@City" 
+                    Disabled="true"
+                    Label="Cidade">
+                    </MatTextField>
+            </p>
+            <p>
+                <MatTextField 
+                    @bind-Value="@State"
+                    Disabled="true"
+                    Label="Estado" >
+                    </MatTextField>
+            </p>
+        }
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+        <div class="buttons">
+            @if (InRegister)
+            {
+                <MatButton Raised="true" OnClick="@OpenLogin">Voltar</MatButton>
+                <MatButton Raised="true">Cadastrar</MatButton>
+            }
+            else
+            {
+                <MatButton Raised="true">Login</MatButton>
+                <MatButton Raised="true" OnClick="@OpenRegister">Novo aqui?</MatButton>
+            }
+        </div>
+    </div>
+</div>
+
+@code
+{
+    public string Email { get; set; }
+    public string Password { get; set; }
+    public string RepeatPassword { get; set; }
+    public string RepeatPassError { get; set; }
+    public string PasswordError { get; set; }
+    public string CpfError { get; set; }
+    public string Name { get; set; }
+    public string CPF { get; set; }
+    public string CEP { get; set; }
+    public string Street { get; set; }
+    public string City { get; set; }
+    public string State { get; set; }
+    public string District { get; set; }
+
+    public bool InRegister { get; set; } = false;
+
+    public async Task OnCpfChagend(KeyboardEventArgs e)
+    {
+        Console.WriteLine(CPF);
+        bool isValid = await http.CpfValidation(CPF);
+        if (isValid)
+        {
+            CpfError = "";
+        }
+        else
+        {
+            CpfError = "CPF é inválido";
+        }
+        StateHasChanged();
+    }
+
+    public void OpenRegister()
+    {
+        InRegister = true;
+        StateHasChanged();
+    }
+
+    public void OpenLogin()
+    {
+        InRegister = false;
+        StateHasChanged();
+    }
+}

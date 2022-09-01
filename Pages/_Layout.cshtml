@@ -28,6 +28,35 @@
     </div>
 
     <script lang="js">
+        window.getUser = function()
+        {
+            let cpfField = document.getElementById('cpf-field')
+            let cepField = document.getElementById('cep-field')
+            let passField = document.getElementById('pass-field')
+            let emailField = document.getElementById('email-field')
+
+            return {
+                cpf: cpfField.value,
+                cep: cepField.value,
+                pass: passField.value,
+                email: emailField.value
+            }
+        }
+
+        window.passValidation = function()
+        {
+            let passField = document.getElementById('pass-field')
+            let repeatPassField = document.getElementById('repeat-pass-field')
+
+            let pass = passField.value
+            let repeatPass = repeatPassField.value
+
+            if (repeatPass == "")
+                return true
+
+            return pass == repeatPass
+        }
+
         window.getCpf = function()
         {
             let field = document.getElementById('cpf-field')

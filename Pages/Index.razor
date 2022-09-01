@@ -5,7 +5,8 @@
 <div class="main-container">
     <div class="login-area">
         <p>
-            <MatTextField 
+            <MatTextField
+                id='email-field'
                 @bind-Value="@Email" 
                 Label="Email" 
                 Icon="email"></MatTextField>
@@ -16,7 +17,9 @@
         </label>
         <p>
             <MatTextField 
-                @bind-Value="@Password" 
+                id='pass-field'
+                @bind-Value="@Password"
+                OnKeyUp="@OnPassChanged"
                 Label="Senha" 
                 Type="password"
                 Icon="lock"></MatTextField>
@@ -29,7 +32,9 @@
             </label>
             <p>
                 <MatTextField 
+                    id='repeat-pass-field'
                     @bind-Value="@RepeatPassword"
+                    OnKeyUp="@OnPassChanged"
                     Label="Repita sua Senha" 
                     Type="password"
                     Icon="lock"></MatTextField>
@@ -142,6 +147,18 @@
         {
             CpfError = "CPF é inválido";
         }
+        StateHasChanged();
+    }
+
+    public async void OnPassChanged(KeyboardEventArgs e)
+    {
+        if (!InRegister)
+            return;
+        
+        var isSame = await js.InvokeAsync<bool>(
+            "window.passValidation", new object[0]);
+        
+        RepeatPassError = isSame ? "" : "As senhas devem ser iguais";
         StateHasChanged();
     }
 

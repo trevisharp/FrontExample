@@ -92,7 +92,7 @@
             @if (InRegister)
             {
                 <MatButton Raised="true" OnClick="@OpenLogin">Voltar</MatButton>
-                <MatButton Raised="true" OnClick="@Cadastrar">Cadastrar</MatButton>
+                <MatButton Raised="true" @bind-Disabled="@RegisterDisable" OnClick="@Cadastrar">Cadastrar</MatButton>
             }
             else
             {
@@ -118,6 +118,7 @@
     public string City { get; set; }
     public string State { get; set; }
     public string District { get; set; }
+    public bool RegisterDisable { get; set; }
 
     public bool InRegister { get; set; } = false;
 
@@ -126,8 +127,12 @@
         var cep = await js.InvokeAsync<string>("window.getCep", new object[0]);
         CEP cepData = await http.GetCepInformation(cep);
         if (cepData == null)
+        {
+            RegisterDisable = true;
             return;
+        }
         
+        RegisterDisable = false;
         this.Street = cepData.Logradouro;
         this.City = cepData.Localidade;
         this.State = cepData.Uf;
@@ -142,10 +147,12 @@
         if (isValid)
         {
             CpfError = "";
+            RegisterDisable = false;
         }
         else
         {
             CpfError = "CPF é inválido";
+            RegisterDisable = true;
         }
         StateHasChanged();
     }
@@ -158,6 +165,7 @@
         var isSame = await js.InvokeAsync<bool>(
             "window.passValidation", new object[0]);
         
+        RegisterDisable = !isSame;
         RepeatPassError = isSame ? "" : "As senhas devem ser iguais";
         StateHasChanged();
     }
@@ -165,15 +173,21 @@
     public async void Cadastrar()
     {
         Usuario usuario = new Usuario();
-        var cep = await js.InvokeAsync<string>(
-            "window.getCep", new object[0]);
+        var data = await js.InvokeAsync<string[]>(
+            "window.getUser", new object[0]);
+        
+        var cpf = data[0];
+        cpf = cpf.Replace(".", "");
+        cpf = cpf.Replace("-", "");
+        usuario.Cpf = long.Parse(cpf);
+
+        var cep = data[1];
         cep = cep.Replace(".", "");
         cep = cep.Replace("-", "");
         usuario.Cep = int.Parse(cep);
 
-        usuario.Cpf = 2;
-        usuario.Email = "edmail@mail.com";
-        usuario.Senha = "elefante";
+        usuario.Senha = data[2];
+        usuario.Email = data[3];
 
         await http.RegisterUser(usuario);
     }

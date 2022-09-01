@@ -35,12 +35,12 @@
             let passField = document.getElementById('pass-field')
             let emailField = document.getElementById('email-field')
 
-            return {
-                cpf: cpfField.value,
-                cep: cepField.value,
-                pass: passField.value,
-                email: emailField.value
-            }
+            return [
+                cpfField.value, 
+                cepField.value, 
+                passField.value,
+                emailField.value
+            ]
         }
 
         window.passValidation = function()

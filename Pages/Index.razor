@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject HttpService http
+@inject IJSRuntime js
 
 <div class="main-container">
     <div class="login-area">
@@ -17,6 +18,7 @@
             <MatTextField 
                 @bind-Value="@Password" 
                 Label="Senha" 
+                Type="password"
                 Icon="lock"></MatTextField>
         </p>
 
@@ -29,11 +31,13 @@
                 <MatTextField 
                     @bind-Value="@RepeatPassword"
                     Label="Repita sua Senha" 
+                    Type="password"
                     Icon="lock"></MatTextField>
             </p>
             <label style="color: red;">@CpfError</label>
             <p>
-                <MatTextField 
+                <MatTextField
+                    id='cpf-field'
                     @bind-Value="@CPF" 
                     Icon="security"
                     OnKeyUp="@OnCpfChagend"
@@ -41,37 +45,39 @@
                     </MatTextField>
             </p>
             <p>
-                <MatTextField 
+                <MatTextField
+                    id='cep-field'
                     @bind-Value="@CEP"
-                    Icon="home" 
+                    Icon="home"
+                    OnKeyUp="@OnCepChanged"
                     Label="CEP">
                     </MatTextField>
             </p>
             <p>
                 <MatTextField 
                     @bind-Value="@Street" 
-                    Disabled="true"
+                    ReadOnly="true"
                     Label="Rua">
                     </MatTextField>
             </p>
             <p>
                 <MatTextField 
                     @bind-Value="@District" 
-                    Disabled="true"
+                    ReadOnly="true"
                     Label="Bairro">
                     </MatTextField>
             </p>
             <p>
                 <MatTextField 
                     @bind-Value="@City" 
-                    Disabled="true"
+                    ReadOnly="true"
                     Label="Cidade">
                     </MatTextField>
             </p>
             <p>
                 <MatTextField 
                     @bind-Value="@State"
-                    Disabled="true"
+                    ReadOnly="true"
                     Label="Estado" >
                     </MatTextField>
             </p>
@@ -81,7 +87,7 @@
             @if (InRegister)
             {
                 <MatButton Raised="true" OnClick="@OpenLogin">Voltar</MatButton>
-                <MatButton Raised="true">Cadastrar</MatButton>
+                <MatButton Raised="true" OnClick="@Cadastrar">Cadastrar</MatButton>
             }
             else
             {
@@ -110,10 +116,24 @@
 
     public bool InRegister { get; set; } = false;
 
+    public async Task OnCepChanged(KeyboardEventArgs e)
+    {
+        var cep = await js.InvokeAsync<string>("window.getCep", new object[0]);
+        CEP cepData = await http.GetCepInformation(cep);
+        if (cepData == null)
+            return;
+        
+        this.Street = cepData.Logradouro;
+        this.City = cepData.Localidade;
+        this.State = cepData.Uf;
+        this.District = cepData.Bairro;
+        StateHasChanged();
+    }
+
     public async Task OnCpfChagend(KeyboardEventArgs e)
     {
-        Console.WriteLine(CPF);
-        bool isValid = await http.CpfValidation(CPF);
+        var cpf = await js.InvokeAsync<string>("window.getCpf", new object[0]);
+        bool isValid = await http.CpfValidation(cpf);
         if (isValid)
         {
             CpfError = "";
@@ -123,6 +143,22 @@
             CpfError = "CPF é inválido";
         }
         StateHasChanged();
+    }
+
+    public async void Cadastrar()
+    {
+        Usuario usuario = new Usuario();
+        var cep = await js.InvokeAsync<string>(
+            "window.getCep", new object[0]);
+        cep = cep.Replace(".", "");
+        cep = cep.Replace("-", "");
+        usuario.Cep = int.Parse(cep);
+
+        usuario.Cpf = 2;
+        usuario.Email = "edmail@mail.com";
+        usuario.Senha = "elefante";
+
+        await http.RegisterUser(usuario);
     }
 
     public void OpenRegister()
